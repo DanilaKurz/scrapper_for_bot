@@ -3,14 +3,22 @@ from datetime import datetime
 import time
 import requests
 from bs4 import BeautifulSoup
+from selenium import webdriver
 
 
 json_file = open('json1.json', 'w+')
 
 
 url = 'https://www.datacenters.com/news/categories/colocation'
-response = requests.get(url)
-soup = BeautifulSoup(response.text, 'lxml')
+driver = webdriver.Chrome()
+driver.get(url)
+html = driver.page_source
+print(html)
+
+
+
+# response = requests.get(url)
+# soup = BeautifulSoup(response.text, 'lxml')
 
 today = datetime.today().date()
 
@@ -50,3 +58,4 @@ print(soup.text)
 #     json_file.close
 #     print(f'За сегодняшний день на сйте: {url} найдено {news_count} новостей')
 #     break
+
