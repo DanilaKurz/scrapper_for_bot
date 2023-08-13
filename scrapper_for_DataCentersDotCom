@@ -1,0 +1,46 @@
+import json
+from datetime import datetime
+import time
+import requests
+from bs4 import BeautifulSoup
+
+
+json_file = open('json1.json', 'w+')
+
+
+url = 'https://www.datacenters.com/news/categories/colocation'
+response = requests.get(url)
+soup = BeautifulSoup(response.text, 'lxml')
+
+today = datetime.today().date()
+
+one_article = soup.find(class_='BlogCategory__column__o313R')  #контейнер с новостью
+article_date = one_article.find(class_='BlogPostTile__date__O1dPX').text
+test_date = datetime.strptime("2023-08-11", "%Y-%m-%d").date()
+news_count = 0
+
+# print(test_date)
+
+while True:
+  parsed_date = datetime.strptime(article_date, '%d %b, %Y').date()  #дата в контейнере, приведенная к нужному формату
+  if parsed_date == test_date:
+    news_title = one_article.find(class_='BlogPostTile__title__dfb8J BlogPostTile__blogCategory__fhdb_').text  #заголовок новости
+    today_link = one_article.find('a').get('href')  #ссылка на саму новость
+    news_body = one_article.find(class_='BlogPostTile__body__av3kz BlogPostTile__blogCategory__fhdb_') #полный текст статьи
+
+    data = {'date': article_date,  #запись в словарь даты
+            'link': today_link, #запись в словарь ссылки
+            'title': news_title,  #запись в словарь заголовка
+            'body': news_body}  #запись в словарь текста статьи
+
+    json.dump(data, json_file)
+
+    news_count += 1
+
+    one_article = one_article.find_next(class_='BlogCategory__column__o313R')
+    article_date = one_article.find(class_='BlogPostTile__date__O1dPX').text
+
+  else:
+    json_file.close
+    print(f'За сегодняшний день на сйте: {url} найдено {news_count} новостей')
+    break
